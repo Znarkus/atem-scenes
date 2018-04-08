@@ -1,0 +1,21 @@
+{
+  "name": "atem-scenes",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "applest-atem": "^0.2.4",
+    "koa": "^2.4.1",
+    "koa-static": "^4.0.2",
+    "koa-trie-router": "^2.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^1.14.11"
+  },
+  "scripts": {
+    "start": "node .",
+    "dev": "nodemon"
+  },
+  "author": "",
+  "license": "ISC"
+}
