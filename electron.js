@@ -1,8 +1,8 @@
 'use strict'
 
 const { app, BrowserWindow } = require('electron')
-const path = require('path')
-const url = require('url')
+// const path = require('path')
+// const url = require('url')
 
 require('./index')
 
@@ -12,7 +12,7 @@ let win
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ width: 1200, height: 900 })
+  win = new BrowserWindow({ width: 800, height: 500 })
 
   // and load the index.html of the app.
   win.loadURL('http://localhost:3000')
@@ -23,7 +23,7 @@ function createWindow () {
   // }))
 
   // Open the DevTools.
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   win.on('closed', () => {

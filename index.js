@@ -4,6 +4,7 @@ const ATEM = require('applest-atem')
 const Koa = require('koa')
 const Router = require('koa-trie-router')
 const serve = require('koa-static')
+const { resolve } = require('path')
 
 const atem = new ATEM()
 const app = new Koa()
@@ -282,7 +283,7 @@ router
   })
 
 
-app.use(serve('www'))
+app.use(serve('dist'))
 app.use(router.middleware())
 app.listen(3000)
 
