@@ -13,6 +13,7 @@ UnicodeData.txt
 .tern-port
 dist/
 .cache/
+ATEM scenes/
 
 # ignore terminal hack for vim in macOS Sierra
 xterm-256color.ti

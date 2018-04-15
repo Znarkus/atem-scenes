@@ -2,6 +2,11 @@
 
 import $ from 'jquery'
 
+$.get('/config', r => {
+  $('#top').text(`ATEM on ${r.atem.ip}`)
+})
+
+
 $('.states button').click(function () {
   $.post('/state/' + $(this).attr('id') + '/' + getOptions())
 })
