@@ -6,19 +6,25 @@ const { app, BrowserWindow } = require('electron')
 
 console.log('Starting [1]..')
 
-require('./index')
+if (process.env.NODE_ENV !== 'development') {
+  require('./index')
+}
 
-console.log('Starting [2]..')
+// console.log('Starting [2]..')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
 
 function createWindow () {
-  console.log('Starting [3]..')
+  console.log('Starting [2]..')
 
   // Create the browser window.
-  win = new BrowserWindow({ width: 800, height: 500, show: false })
+  win = new BrowserWindow({
+    width: 850,
+    height: 570,
+    show: false,
+  })
 
   // and load the index.html of the app.
   win.loadURL('http://localhost:3000')
