@@ -1,5 +1,13 @@
 'use strict'
 
+const ATEM = require('applest-atem')
+const Koa = require('koa')
+const Router = require('koa-trie-router')
+const serve = require('koa-static')
+const io = require('socket.io')
+const send = require('koa-send')
+const { resolve } = require('path')
+
 const CONFIG = {
   http: {
     port: 3000,
@@ -8,12 +16,6 @@ const CONFIG = {
     ip: '10.40.1.20'
   }
 }
-
-const ATEM = require('applest-atem')
-const Koa = require('koa')
-const Router = require('koa-trie-router')
-const serve = require('koa-static')
-const { resolve } = require('path')
 
 const atem = new ATEM()
 const app = new Koa()
@@ -52,12 +54,11 @@ const states = {
 			},
 		},
 		[mix.PARENTS]: {
-			input: inputs.GFX,
+			input: inputs.PLAYBACK,
 			usk: {
 				[usk.BANNER]: false,
 				[usk.TEXT]: false,
 			},
-			macro: macros.FL_TEXT_DOWN,
 		}
 	},
 	animations: {
@@ -69,58 +70,199 @@ const states = {
 			},
 		},
 		[mix.PARENTS]: {
-			input: inputs.GFX,
+			input: inputs.CAM,
 			usk: {
 				[usk.BANNER]: false,
-				[usk.TEXT]: false,
+				[usk.TEXT]: true,
 			},
 			macro: macros.FL_TEXT_DOWN,
 		}
 	},
+  cyc: {
+    [mix.MAIN]: {
+      input: inputs.PLAYBACK,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: false,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: false,
+      },
+    }
+  },
+  'cyc-text': {
+    [mix.MAIN]: {
+      input: inputs.PLAYBACK,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: true,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: false,
+      },
+    }
+  },
+  cam: {
+    [mix.MAIN]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: false,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: false,
+      },
+    }
+  },
+  'cam-lyrics': {
+    [mix.MAIN]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: true,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: true,
+      },
+      macro: macros.FL_TEXT_NORMAL,
+    }
+  },
+  'cam-banner': {
+    [mix.MAIN]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: false,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: false,
+      },
+    }
+  },
+  'cam-banner-text': {
+    [mix.MAIN]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: true,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.CAM,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: true,
+      },
+      macro: macros.FL_TEXT_NORMAL,
+    }
+  },
+  link: {
+    [mix.MAIN]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: false,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: false,
+      },
+    }
+  },
+  'link-lyrics': {
+    [mix.MAIN]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: true,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: false,
+        [usk.TEXT]: true,
+      },
+      macro: macros.FL_TEXT_NORMAL,
+    }
+  },
+  'link-banner': {
+    [mix.MAIN]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: false,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: false,
+      },
+    }
+  },
+  'link-banner-text': {
+    [mix.MAIN]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: true,
+      },
+    },
+    [mix.PARENTS]: {
+      input: inputs.LINK,
+      usk: {
+        [usk.BANNER]: true,
+        [usk.TEXT]: true,
+      },
+      macro: macros.FL_TEXT_NORMAL,
+    }
+  },
 }
 
 const nextTransition = {}
 
-router.post('/go/:option', function (ctx) {
-  const withParents = ctx.params.option === 'with_parents'
-
+function go ({ settings }) {
   if (nextTransition.macro) {
     atem.runMacro(nextTransition.macro)
     nextTransition.macro = undefined
   }
 
-  atem.autoTransition(mix.MAIN)
-
-  if (withParents) {
-    atem.autoTransition(mix.PARENTS)
+  if (settings.main) {
+    atem.autoTransition(mix.MAIN)
   }
 
-  ctx.status = 204
-})
+  if (settings.parents) {
+    atem.autoTransition(mix.PARENTS)
+  }
+}
 
-router.post('/state/:id/:option', function (ctx) {
-  const stateId = ctx.params.id
-  const withParents = ctx.params.option === 'with_parents'
-
-// const state = states[stateId]
-
-// for (const outputId of Object.keys(state)) {
-// 	if (!withParents && outputId === mix.PARENTS) {
-// 		continue
-// 	}
-
-// 	const output = state[outputId]
-
-// 	atem.changePreviewInput(output.input, outputId)
-
-// 	nextTransition.macro = output.macro
-
-// 	for (const uskId of Object.keys(output.usk)) {
-// 		keyPreview(outputId, uskId, output.usk[uskId])
-// 	}
-// }
-
-  switch (stateId) {
+function triggerScene ({ sceneId, settings }) {
+  switch (sceneId) {
     case 'pre-post':
     case 'video':
       // Main
@@ -128,7 +270,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, false)
 
-    if (withParents) {
+    if (settings.parents) {
       // Parents
       atem.changePreviewInput(inputs.PLAYBACK, mix.PARENTS)
       nextTransition.macro = undefined
@@ -143,7 +285,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, true)
 
-    if (withParents) {
+    if (settings.parents) {
       // Parents
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = macros.FL_TEXT_DOWN
@@ -158,7 +300,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, false)
 
-    if (withParents) {
+    if (settings.parents) {
       // Parents
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = undefined
@@ -173,7 +315,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, true)
 
-    if (withParents) {
+    if (settings.parents) {
       // Parents
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = macros.FL_TEXT_NORMAL
@@ -187,7 +329,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, false)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = undefined
         keyPreview(mix.PARENTS, usk.BANNER, false)
@@ -200,7 +342,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, true)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = macros.FL_TEXT_NORMAL
         keyPreview(mix.PARENTS, usk.BANNER, false)
@@ -213,7 +355,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, true)
       keyPreview(mix.MAIN, usk.TEXT, false)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = undefined
         keyPreview(mix.PARENTS, usk.BANNER, true)
@@ -226,7 +368,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, true)
       keyPreview(mix.MAIN, usk.TEXT, true)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = macros.FL_TEXT_NORMAL
         keyPreview(mix.PARENTS, usk.BANNER, true)
@@ -239,7 +381,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, false)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.CAM, mix.PARENTS)
       nextTransition.macro = undefined
         keyPreview(mix.PARENTS, usk.BANNER, false)
@@ -252,7 +394,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, false)
       keyPreview(mix.MAIN, usk.TEXT, true)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.LINK, mix.PARENTS)
       nextTransition.macro = macros.FL_TEXT_NORMAL
         keyPreview(mix.PARENTS, usk.BANNER, false)
@@ -265,7 +407,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, true)
       keyPreview(mix.MAIN, usk.TEXT, false)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.LINK, mix.PARENTS)
       nextTransition.macro = undefined
         keyPreview(mix.PARENTS, usk.BANNER, true)
@@ -278,7 +420,7 @@ router.post('/state/:id/:option', function (ctx) {
       keyPreview(mix.MAIN, usk.BANNER, true)
       keyPreview(mix.MAIN, usk.TEXT, true)
 
-    if (withParents) {
+    if (settings.parents) {
       atem.changePreviewInput(inputs.LINK, mix.PARENTS)
       nextTransition.macro = macros.FL_TEXT_NORMAL
         keyPreview(mix.PARENTS, usk.BANNER, true)
@@ -286,24 +428,49 @@ router.post('/state/:id/:option', function (ctx) {
     }
     break
   }
-
-  ctx.status = 204
-})
-
-router.get('/config', ctx => {
-  ctx.body = CONFIG
-})
+}
 
 app.use(serve(resolve(__dirname, 'dist')))
 app.use(router.middleware())
+app.use(ctx => {
+  return send(ctx, 'index.html', { root: resolve(__dirname, 'dist') })
+})
 
 console.log('Starting web server..')
-app.listen(CONFIG.http.port)
+const server = app.listen(CONFIG.http.port, httpUp)
+
+const wss = io(server)
 
 console.log('Connecting to ATEM..')
 atem.connect(CONFIG.atem.ip)
 
-atem.on('connect', connect)
+atem.on('connect', atemConnect)
+atem.on('disconnect', atemDisconnect)
+
+function httpUp () {
+  wss.on('connection', (socket) => {
+    console.log('Client connected')
+
+    socket.emit('load', {
+      config: CONFIG,
+      connected: atem.connectionState === ATEM.ConnectionState.Established,
+      inputNames: atem.state.channels,
+      inputs,
+      mix,
+      usk,
+      macros,
+      states,
+    })
+
+    socket.on('triggerScene', (opts) => {
+      triggerScene(opts)
+    })
+
+    socket.on('go', (opts) => {
+      go(opts)
+    })
+  })
+}
 
 function parentsFromMain () {
 	atem.changePreviewInput(inputs.MIX_MAIN, mix.PARENTS)
@@ -332,9 +499,14 @@ function keyPreview (me, number, value) {
 //   atem.changeProgramInput(3, 1) // ME2(1)
 // })
 
-function connect () {
-	console.log('Running')
-	// console.log(JSON.stringify(atem.state, null, 2));
+function atemConnect () {
+	console.log('Connected to ATEM')
+	wss.emit('atemConnection', { connected: true })
+}
+
+function atemDisconnect () {
+	console.log('Disconnected from ATEM')
+  wss.emit('atemConnection', { connected: false })
 }
 
 // atem.on('stateChanged', function(err, newState) {

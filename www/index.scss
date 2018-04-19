@@ -1,32 +1,81 @@
 body {
   background: #333;
   color: #eee;
+  font: 16px/1.5em "Helvetica Neue";
 }
-button {
-  padding: 15px;
-  font-size: 16px;
-  margin: 5px;
-}
-section {
-  margin: 20px 0;
-}
-.states.gfx button {
-  background: #7daff9;
-}
-.states.cyc button {
-  background: #b8fbbd;
-}
-.states.cam button {
-  background: #daa8ef;
-}
-.states.link button {
-  background: #efb5a8;
-}
+
 #go {
+  padding: 10px 15px;
   font-weight: bold;
   background: #333;
   color: #eee;
+  font-size: 23px;
 }
+
+.scenes {
+  margin: 20px 0;
+  clear: both;
+
+  button {
+    padding: 15px;
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  .scene {
+    float: left;
+    padding: 0 30px 30px 0;
+
+    &:last-child {
+      padding-right: 0;
+    }
+
+    .info {
+      font-size: 11px;
+      line-height: 1.4em;
+      color: #aaa;
+    }
+
+    .info:nth-child(2n) {
+      color: #ccc;
+    }
+  }
+}
+.scenes.gfx button {
+  background: #7daff9;
+}
+.scenes.cyc button {
+  background: #b8fbbd;
+}
+.scenes.cam button {
+  background: #daa8ef;
+}
+.scenes.link button {
+  background: #efb5a8;
+}
+
+#master-control {
+  > * {
+    margin-right: 20px;
+    display: inline-block;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
 #top {
+  margin: 0;
   float: right;
+
+  span {
+    display: inline-block;
+    padding: 10px 15px;
+    color: #aaa;
+
+    &.disconnected {
+      color: red;
+    }
+  }
 }
