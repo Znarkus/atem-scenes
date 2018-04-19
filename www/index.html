@@ -1,34 +1,15 @@
-<style type="text/css">
-	body {
-	    background: #333;
-	    color: #eee;
-	}  
-	button {
-		padding: 15px;
-		font-size: 16px;
-		margin: 5px;
-	}
-	section {
-		margin: 20px 0;
-	}
-	.states.gfx button {
-		background: #7daff9;
-	}
-	.states.cyc button {
-		background: #b8fbbd;
-	}
-	.states.cam button {
-		background: #daa8ef;
-	}
-	.states.link button {
-		background: #efb5a8;
-	}
-	#go {
-		font-weight: bold;
-	    background: #333;
-	    color: #eee;
-	}
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>ATEM scenes</title>
+	<link href="index.scss" rel="stylesheet">
+</head>
+<body>
+
+<section id="top">
+
+</section>
 
 <section>
 	<label>
@@ -67,17 +48,7 @@
 	<button id="link-banner">Livelänk med banner</button>
 </section>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script type="text/javascript">
-	$('.states button').click(function () {
-		$.post('/state/' + $(this).attr('id') + '/' + getOptions())
-	})
+<script src="index.js"></script>
 
-	$('#go').click(function () {
-		$.post('/go/' + getOptions())
-	})
-
-	function getOptions () {
-		return $('#with_parents').is(':checked') ? 'with_parents' : 'without_parents'
-	}
-</script>
+</body>
+</html>

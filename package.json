@@ -1,20 +1,28 @@
 {
   "name": "atem-scenes",
+  "productName": "ATEM scenes",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "electron.js",
   "dependencies": {
     "applest-atem": "^0.2.4",
+    "jquery": "^3.3.1",
     "koa": "^2.4.1",
     "koa-static": "^4.0.2",
     "koa-trie-router": "^2.1.6"
   },
   "devDependencies": {
-    "nodemon": "^1.14.11"
+    "electron": "^1.8.4",
+    "electron-packager": "^12.0.1",
+    "node-sass": "^4.8.3",
+    "nodemon": "^1.14.11",
+    "parcel-bundler": "^1.7.0"
   },
   "scripts": {
-    "start": "node .",
-    "dev": "nodemon"
+    "start": "electron ./electron.js",
+    "dev": "nodemon",
+    "build:watch": "parcel watch www/index.html",
+    "build:electron": "electron-packager ./ --overwrite --out=\"ATEM scenes\" --icon=assets/atem.icns"
   },
   "author": "",
   "license": "ISC"

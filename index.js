@@ -1,9 +1,19 @@
 'use strict'
 
+const CONFIG = {
+  http: {
+    port: 3000,
+  },
+  atem: {
+    ip: '10.40.1.20'
+  }
+}
+
 const ATEM = require('applest-atem')
 const Koa = require('koa')
 const Router = require('koa-trie-router')
 const serve = require('koa-static')
+const { resolve } = require('path')
 
 const atem = new ATEM()
 const app = new Koa()
@@ -71,223 +81,227 @@ const states = {
 
 const nextTransition = {}
 
-router
-  .post('/go/:option', function (ctx) {
-  	const withParents = ctx.params.option === 'with_parents'
+router.post('/go/:option', function (ctx) {
+  const withParents = ctx.params.option === 'with_parents'
 
-  	console.log(nextTransition.macro)
-	if (nextTransition.macro) {
-		atem.runMacro(nextTransition.macro)
-		nextTransition.macro = undefined
-	}
+  if (nextTransition.macro) {
+    atem.runMacro(nextTransition.macro)
+    nextTransition.macro = undefined
+  }
 
-	atem.autoTransition(mix.MAIN)
+  atem.autoTransition(mix.MAIN)
 
-	if (withParents) {
-		atem.autoTransition(mix.PARENTS)
-	}
+  if (withParents) {
+    atem.autoTransition(mix.PARENTS)
+  }
 
-  	ctx.status = 204
-  })
-  .post('/state/:id/:option', function (ctx) {
-  	const stateId = ctx.params.id
-  	const withParents = ctx.params.option === 'with_parents'
+  ctx.status = 204
+})
 
-	// const state = states[stateId]
+router.post('/state/:id/:option', function (ctx) {
+  const stateId = ctx.params.id
+  const withParents = ctx.params.option === 'with_parents'
 
-	// for (const outputId of Object.keys(state)) {
-	// 	if (!withParents && outputId === mix.PARENTS) {
-	// 		continue
-	// 	}
+// const state = states[stateId]
 
-	// 	const output = state[outputId]
+// for (const outputId of Object.keys(state)) {
+// 	if (!withParents && outputId === mix.PARENTS) {
+// 		continue
+// 	}
 
-	// 	atem.changePreviewInput(output.input, outputId)
+// 	const output = state[outputId]
 
-	// 	nextTransition.macro = output.macro
+// 	atem.changePreviewInput(output.input, outputId)
 
-	// 	for (const uskId of Object.keys(output.usk)) {
-	// 		keyPreview(outputId, uskId, output.usk[uskId])
-	// 	}
-	// }
+// 	nextTransition.macro = output.macro
 
-  	switch (stateId) {
-  		case 'pre-post':
-  		case 'video':
-  			// Main
-	  		atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, false)
+// 	for (const uskId of Object.keys(output.usk)) {
+// 		keyPreview(outputId, uskId, output.usk[uskId])
+// 	}
+// }
 
-			if (withParents) {
-				// Parents
-				atem.changePreviewInput(inputs.PLAYBACK, mix.PARENTS)
-				nextTransition.macro = undefined
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, false)
-			}
-  		break
+  switch (stateId) {
+    case 'pre-post':
+    case 'video':
+      // Main
+      atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, false)
 
-  		case 'animations':
-  			// Main
-	  		atem.changePreviewInput(inputs.GFX, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, true)
+    if (withParents) {
+      // Parents
+      atem.changePreviewInput(inputs.PLAYBACK, mix.PARENTS)
+      nextTransition.macro = undefined
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, false)
+    }
+    break
 
-			if (withParents) {
-				// Parents
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = macros.FL_TEXT_DOWN
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, true)
-			}
-  		break
+    case 'animations':
+      // Main
+      atem.changePreviewInput(inputs.GFX, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, true)
 
-  		case 'cyc':
-  			// Main
-	  		atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, false)
+    if (withParents) {
+      // Parents
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = macros.FL_TEXT_DOWN
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, true)
+    }
+    break
 
-			if (withParents) {
-				// Parents
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = undefined
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, false)
-			}
-  		break
+    case 'cyc':
+      // Main
+      atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, false)
 
-  		case 'cyc-text':
-  			// Main
-	  		atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, true)
+    if (withParents) {
+      // Parents
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = undefined
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, false)
+    }
+    break
 
-			if (withParents) {
-				// Parents
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = macros.FL_TEXT_NORMAL
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, false)
-			}
-  		break
+    case 'cyc-text':
+      // Main
+      atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, true)
 
-  		case 'cam':
-	  		atem.changePreviewInput(inputs.CAM, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, false)
+    if (withParents) {
+      // Parents
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = macros.FL_TEXT_NORMAL
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, false)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = undefined
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, false)
-			}
-  		break
+    case 'cam':
+      atem.changePreviewInput(inputs.CAM, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, false)
 
-  		case 'cam-lyrics':
-	  		atem.changePreviewInput(inputs.CAM, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, true)
+    if (withParents) {
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = undefined
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, false)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = macros.FL_TEXT_NORMAL
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, true)
-			}
-  		break
+    case 'cam-lyrics':
+      atem.changePreviewInput(inputs.CAM, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, true)
 
-  		case 'cam-banner':
-	  		atem.changePreviewInput(inputs.CAM, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, true)
-	  		keyPreview(mix.MAIN, usk.TEXT, false)
+    if (withParents) {
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = macros.FL_TEXT_NORMAL
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, true)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = undefined
-		  		keyPreview(mix.PARENTS, usk.BANNER, true)
-		  		keyPreview(mix.PARENTS, usk.TEXT, false)
-			}
-  		break
+    case 'cam-banner':
+      atem.changePreviewInput(inputs.CAM, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, true)
+      keyPreview(mix.MAIN, usk.TEXT, false)
 
-  		case 'cam-banner-text':
-	  		atem.changePreviewInput(inputs.CAM, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, true)
-	  		keyPreview(mix.MAIN, usk.TEXT, true)
+    if (withParents) {
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = undefined
+        keyPreview(mix.PARENTS, usk.BANNER, true)
+        keyPreview(mix.PARENTS, usk.TEXT, false)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = macros.FL_TEXT_NORMAL
-		  		keyPreview(mix.PARENTS, usk.BANNER, true)
-		  		keyPreview(mix.PARENTS, usk.TEXT, true)
-			}
-  		break
+    case 'cam-banner-text':
+      atem.changePreviewInput(inputs.CAM, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, true)
+      keyPreview(mix.MAIN, usk.TEXT, true)
 
-  		case 'link':
-	  		atem.changePreviewInput(inputs.CAM, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, false)
+    if (withParents) {
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = macros.FL_TEXT_NORMAL
+        keyPreview(mix.PARENTS, usk.BANNER, true)
+        keyPreview(mix.PARENTS, usk.TEXT, true)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-				nextTransition.macro = undefined
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, false)
-			}
-  		break
+    case 'link':
+      atem.changePreviewInput(inputs.CAM, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, false)
 
-  		case 'link-lyrics':
-	  		atem.changePreviewInput(inputs.LINK, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, false)
-	  		keyPreview(mix.MAIN, usk.TEXT, true)
+    if (withParents) {
+      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
+      nextTransition.macro = undefined
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, false)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.LINK, mix.PARENTS)
-				nextTransition.macro = macros.FL_TEXT_NORMAL
-		  		keyPreview(mix.PARENTS, usk.BANNER, false)
-		  		keyPreview(mix.PARENTS, usk.TEXT, true)
-			}
-  		break
+    case 'link-lyrics':
+      atem.changePreviewInput(inputs.LINK, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, false)
+      keyPreview(mix.MAIN, usk.TEXT, true)
 
-  		case 'link-banner':
-	  		atem.changePreviewInput(inputs.LINK, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, true)
-	  		keyPreview(mix.MAIN, usk.TEXT, false)
+    if (withParents) {
+      atem.changePreviewInput(inputs.LINK, mix.PARENTS)
+      nextTransition.macro = macros.FL_TEXT_NORMAL
+        keyPreview(mix.PARENTS, usk.BANNER, false)
+        keyPreview(mix.PARENTS, usk.TEXT, true)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.LINK, mix.PARENTS)
-				nextTransition.macro = undefined
-		  		keyPreview(mix.PARENTS, usk.BANNER, true)
-		  		keyPreview(mix.PARENTS, usk.TEXT, false)
-			}
-  		break
+    case 'link-banner':
+      atem.changePreviewInput(inputs.LINK, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, true)
+      keyPreview(mix.MAIN, usk.TEXT, false)
 
-  		case 'link-banner-text':
-	  		atem.changePreviewInput(inputs.LINK, mix.MAIN)
-	  		keyPreview(mix.MAIN, usk.BANNER, true)
-	  		keyPreview(mix.MAIN, usk.TEXT, true)
+    if (withParents) {
+      atem.changePreviewInput(inputs.LINK, mix.PARENTS)
+      nextTransition.macro = undefined
+        keyPreview(mix.PARENTS, usk.BANNER, true)
+        keyPreview(mix.PARENTS, usk.TEXT, false)
+    }
+    break
 
-			if (withParents) {
-				atem.changePreviewInput(inputs.LINK, mix.PARENTS)
-				nextTransition.macro = macros.FL_TEXT_NORMAL
-		  		keyPreview(mix.PARENTS, usk.BANNER, true)
-		  		keyPreview(mix.PARENTS, usk.TEXT, true)
-			}
-  		break
-  	}
+    case 'link-banner-text':
+      atem.changePreviewInput(inputs.LINK, mix.MAIN)
+      keyPreview(mix.MAIN, usk.BANNER, true)
+      keyPreview(mix.MAIN, usk.TEXT, true)
 
-  	ctx.status = 204
-  })
+    if (withParents) {
+      atem.changePreviewInput(inputs.LINK, mix.PARENTS)
+      nextTransition.macro = macros.FL_TEXT_NORMAL
+        keyPreview(mix.PARENTS, usk.BANNER, true)
+        keyPreview(mix.PARENTS, usk.TEXT, true)
+    }
+    break
+  }
 
+  ctx.status = 204
+})
 
-app.use(serve('www'))
+router.get('/config', ctx => {
+  ctx.body = CONFIG
+})
+
+app.use(serve(resolve(__dirname, 'dist')))
 app.use(router.middleware())
-app.listen(3000)
 
+console.log('Starting web server..')
+app.listen(CONFIG.http.port)
 
-atem.connect('10.40.1.20')
+console.log('Connecting to ATEM..')
+atem.connect(CONFIG.atem.ip)
 
 atem.on('connect', connect)
 

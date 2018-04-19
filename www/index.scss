@@ -1,0 +1,32 @@
+body {
+  background: #333;
+  color: #eee;
+}
+button {
+  padding: 15px;
+  font-size: 16px;
+  margin: 5px;
+}
+section {
+  margin: 20px 0;
+}
+.states.gfx button {
+  background: #7daff9;
+}
+.states.cyc button {
+  background: #b8fbbd;
+}
+.states.cam button {
+  background: #daa8ef;
+}
+.states.link button {
+  background: #efb5a8;
+}
+#go {
+  font-weight: bold;
+  background: #333;
+  color: #eee;
+}
+#top {
+  float: right;
+}
