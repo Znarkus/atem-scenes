@@ -3,6 +3,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import openSocket from 'socket.io-client'
+import hotkeys from 'hotkeys-js';
 
 const socket = openSocket()
 
@@ -18,6 +19,11 @@ export default class Controller extends Component {
 
     socket.on('atemConnection', ({ connected }) => {
       this.setState({ connected })
+    })
+
+    hotkeys('enter', (event, handler) => {
+      event.preventDefault()
+      this.go()
     })
   }
 
@@ -52,16 +58,18 @@ export default class Controller extends Component {
 
     if (!scene) throw new Error(`Scene ${sceneId} not defined`)
 
-    const mixNames = { 0: 'Parents', 1: 'Main' }
-    const uskNames = { 0: 'Banner', 1: 'Text' }
-    const macroNames = { 1: 'Text down', 2: 'Text normal' }
+    const mixNames = Object.keys(mix)
+    const uskNames = Object.keys(usk)
+    const macroNames = Object.keys(macros)
+      .map(k => k.replace(/_/g, ' '))
+
     const labels = [
       inputNames[scene[mixId].input]
         ? inputNames[scene[mixId].input].name
         : `Input ${scene[mixId].input}`,
       scene[mixId].usk[usk.BANNER] ? uskNames[usk.BANNER] : null,
       scene[mixId].usk[usk.TEXT] ? uskNames[usk.TEXT] : null,
-      macroNames[scene[mixId].macro] || null
+      macroNames[scene[mixId].macro - 1 ] || null
     ]
 
     return <div className='info'>
@@ -82,24 +90,34 @@ export default class Controller extends Component {
   }
 
   render () {
-    const { config, connected, settings, setState } = this.state
+    const { config, connected, settings, usk, macros, mix } = this.state
+
+    const uskList = Object.keys(usk || {}).map(k => <li key={k}>
+      {usk[k] + 1}: {k}
+    </li>)
+
+    const macroList = Object.keys(macros || {}).map(k => <li key={k}>
+      {macros[k] + 1}: {k.replace(/_/g, ' ')}
+    </li>)
+
+    const mixList = Object.keys(mix || {}).map(k => <li key={k}>
+      {mix[k]}: {k}
+    </li>)
 
     return (
       <div id="controller">
-        <section id="top">
+        <section id="master-control">
           {config &&
-            <span>ATEM on {config.atem.ip}</span>
+            <p className='atem-info'>ATEM on {config.atem.ip}</p>
           }
 
           {connected ? (
-            <span className="connected">Connected</span>
+            <p className="connected">Connected</p>
           ) : (
-            <span className="disconnected">DISCONNECTED</span>
+            <p className="disconnected">DISCONNECTED</p>
           )}
-        </section>
 
-        <section id="master-control">
-          <label>
+          <label className='toggle-main'>
             <input type="checkbox"
                    name="main"
                    checked={settings.main}
@@ -107,7 +125,8 @@ export default class Controller extends Component {
             />
             <span>Byt Main</span>
           </label>
-          <label>
+
+          <label className='toggle-parents'>
             <input type="checkbox"
                    name="parents"
                    checked={settings.parents}
@@ -117,33 +136,46 @@ export default class Controller extends Component {
           </label>
 
           <button id="go" onClick={this.go}>GO</button>
+          <p className='help-text'>Press Enter to GO</p>
+
+          <section id="info-lists">
+            <h4>Upstream keys</h4>
+            <ul>{uskList}</ul>
+
+            <h4>Macros</h4>
+            <ul>{macroList}</ul>
+
+            <h4>Mixes</h4>
+            <ul>{mixList}</ul>
+          </section>
         </section>
 
-        <section className="scenes gfx">
-          {this.renderScene('video', 'Pre/Post Service')}
-          {this.renderScene('video', 'Video')}
-          {this.renderScene('animations', 'Animations')}
-        </section>
+        <div id="scenes-wrap">
+          <section className="scenes gfx">
+            {this.renderScene('video', 'Pre/Post Service')}
+            {this.renderScene('video', 'Video')}
+            {this.renderScene('animations', 'Animations')}
+          </section>
 
-        <section className="scenes cyc">
-          {this.renderScene('cyc', 'CYC')}
-          {this.renderScene('cyc-text', 'CYC med text')}
-        </section>
+          <section className="scenes cyc">
+            {this.renderScene('cyc', 'CYC')}
+            {this.renderScene('cyc-text', 'CYC med text')}
+          </section>
 
-        <section className="scenes cam">
-          {this.renderScene('cam', 'Kamera')}
-          {this.renderScene('cam-lyrics', 'Kamera med lyrics')}
-          {this.renderScene('cam-banner-text', 'Kamera med banner + text')}
-          {this.renderScene('cam-banner', 'Kamera med banner')}
-        </section>
+          <section className="scenes cam">
+            {this.renderScene('cam', 'Kamera')}
+            {this.renderScene('cam-lyrics', 'Kamera med lyrics')}
+            {this.renderScene('cam-banner-text', 'Kamera med banner + text')}
+            {this.renderScene('cam-banner', 'Kamera med banner')}
+          </section>
 
-        <section className="scenes link">
-          {this.renderScene('link', 'Livelänk')}
-          {this.renderScene('link-lyrics', 'Livelänk med lyrics')}
-          {this.renderScene('link-banner-text', 'Livelänk med banner + text')}
-          {this.renderScene('link-banner', 'Livelänk med banner')}
-        </section>
-
+          <section className="scenes link">
+            {this.renderScene('link', 'Livelänk')}
+            {this.renderScene('link-lyrics', 'Livelänk med lyrics')}
+            {this.renderScene('link-banner-text', 'Livelänk med banner + text')}
+            {this.renderScene('link-banner', 'Livelänk med banner')}
+          </section>
+        </div>
         {/*<nav id="nav">
           <Link to="/output">Output</Link>
         </nav>

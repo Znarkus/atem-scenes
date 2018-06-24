@@ -6,6 +6,7 @@
   "main": "electron.js",
   "dependencies": {
     "applest-atem": "^0.2.4",
+    "hotkeys-js": "^3.3.5",
     "jquery": "^3.3.1",
     "koa": "^2.4.1",
     "koa-static": "^4.0.2",
@@ -32,7 +33,9 @@
     "dev:server": "nodemon",
     "build": "parcel www/index.html",
     "build:watch": "parcel watch www/index.html",
-    "package": "electron-packager ./ --overwrite --out=\"ATEM scenes\" --icon=assets/icon/atem"
+    "package": "electron-packager ./ --overwrite --out=\"ATEM scenes\" --icon=assets/icon/atem --asar",
+    "package-win-32": "npx electron-packager ./ --overwrite --out=\"ATEM scenes\" --icon=assets/icon/atem --platform=win32 --arch=ia32 --asar",
+    "package-win-64": "npx electron-packager ./ --overwrite --out=\"ATEM scenes\" --icon=assets/icon/atem --platform=win32 --arch=x64 --asar"
   },
   "author": "",
   "license": "ISC"
