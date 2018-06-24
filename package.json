@@ -32,7 +32,7 @@
     "dev:server": "nodemon",
     "build": "parcel www/index.html",
     "build:watch": "parcel watch www/index.html",
-    "package": "electron-packager ./ --overwrite --out=\"ATEM scenes\" --icon=assets/icon/atem.icns"
+    "package": "electron-packager ./ --overwrite --out=\"ATEM scenes\" --icon=assets/icon/atem"
   },
   "author": "",
   "license": "ISC"
