@@ -1,116 +1,107 @@
+$white: #fff;
+$bgcolor: #444;
+$textcolor: #aaa;
+$blue: #7aa0d8;
+$green: #9bd09f;
+$purple: #c293d6;
+$salmon: #d6a89e;
+$active: #acdcb1;
+$inactive: #bf4444;
+
 body {
-  background: #333;
-  color: #eee;
-  font: 16px/1.5em "Helvetica Neue";
+  width: 100%;
+  background: $bgcolor;
+  color: $white;
+  font-family: sans-serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 1em;
+  box-sizing: border-box;
 }
 
-#go {
-  padding: 20px 50px;
-  font-weight: bold;
-  background: #333;
-  color: #eee;
-  font-size: 23px;
-  margin: 20px 0 0;
+button {
+  border-radius: 2px;
+  border: 0;
+  color: $white;
+  background: $blue;
+  font-size: 1em;
+  padding: 15px;
+  margin: 0 0 10px;
 }
 
-.scenes {
-  margin: 20px 0;
-  //clear: both;
-
-  button {
-    padding: 15px;
-    font-size: 16px;
-    margin-bottom: 5px;
-
-    &:focus {
-      border-color: red;
-    }
-  }
+#scenes-wrap {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(4, 1fr) 200px;
 
   .scene {
-    display: inline-block;
-    padding: 0 25px 25px 0;
+    grid-column: auto / span 1;
 
-    &:last-child {
-      padding-right: 0;
+    &.two { grid-column: auto / span 2; }
+
+    &.three { grid-column: auto / span 3; }
+
+    &.purple button { background: $purple; }
+
+    &.salmon  button { background: $salmon; }
+
+    &.green button { background: $green; }
+
+    button:focus {
+      outline: 2px solid rgb(7, 255, 7);
     }
 
     .info {
       font-size: 11px;
       line-height: 1.4em;
-      color: #aaa;
+      color: $textcolor;
     }
 
     .info:nth-child(2n) {
       color: #ccc;
     }
   }
-}
-.scenes.gfx button {
-  background: #7daff9;
-}
-.scenes.cyc button {
-  background: #b8fbbd;
-}
-.scenes.cam button {
-  background: #daa8ef;
-}
-.scenes.link button {
-  background: #efb5a8;
-}
 
-#master-control {
-  width: 160px;
-  float: right;
+  #master-control {
+    font-size: 14px;
+    color: $textcolor;
+    grid-row: 1 / span 4;
+    grid-column: 5;
 
-  > label {
-    display: block;
-  }
-  //> * {
-  //  margin-right: 20px;
-  //  display: inline-block;
-  //
-  //  &:last-child {
-  //    margin-right: 0;
-  //  }
-  //}
-  .help-text {
-    color: #aaa;
-    font-size: 12px;
-    font-style: italic;
-    margin: 1px 0 0;
-    padding-left: 3px;
-  }
+    .atem-info { color: $white; }
 
-  #info-lists {
-    color: #7b7b7b;
+    .disconnected {
+      color: $inactive;
+      font-style: italic;
+    }
+
+    .connected { color: $active; }
+
+    .help-text { font-style: italic; }
+
+    p { margin-top: 0; }
+
+    label { display: block; }
 
     h4 {
-      margin: 10px 0 0;
+      margin-bottom: 0;
       text-transform: uppercase;
-      font-size: 14px;
     }
 
     ul {
-      margin: 0;
-      padding: 0;
       list-style: none;
-      font-size: 12px;
+      padding: 0;
+      font-size: .8em;
+      margin-top: 0;
+    }
+
+    #go {
+      margin-top: 1em;
+      font-size: 3em;
+      width: 100%;
+      background: transparent;
+      border: 3px solid $white;
     }
   }
 }
 
-#top {
-  margin: 0;
-  float: right;
-
-  span {
-    display: inline-block;
-    padding: 10px 15px;
-    color: #aaa;
-
-    &.disconnected {
-      color: red;
-    }
-  }
-}
