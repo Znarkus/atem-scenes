@@ -262,171 +262,19 @@ function go ({ settings }) {
 }
 
 function triggerScene ({ sceneId, settings }) {
-  switch (sceneId) {
-    case 'pre-post':
-    case 'video':
-      // Main
-      atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, false)
+  if (settings.main) {
+    const state = states[sceneId][mix.MAIN]
+    atem.changePreviewInput(state.input, mix.MAIN)
+    keyPreview(mix.MAIN, usk.BANNER, state.usk[usk.BANNER])
+    keyPreview(mix.MAIN, usk.TEXT, state.usk[usk.TEXT])
+  }
 
-    if (settings.parents) {
-      // Parents
-      atem.changePreviewInput(inputs.PLAYBACK, mix.PARENTS)
-      nextTransition.macro = undefined
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, false)
-    }
-    break
-
-    case 'animations':
-      // Main
-      atem.changePreviewInput(inputs.GFX, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, true)
-
-    if (settings.parents) {
-      // Parents
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = macros.FL_TEXT_DOWN
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, true)
-    }
-    break
-
-    case 'cyc':
-      // Main
-      atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, false)
-
-    if (settings.parents) {
-      // Parents
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = undefined
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, false)
-    }
-    break
-
-    case 'cyc-text':
-      // Main
-      atem.changePreviewInput(inputs.PLAYBACK, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, true)
-
-    if (settings.parents) {
-      // Parents
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = macros.FL_TEXT_NORMAL
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, false)
-    }
-    break
-
-    case 'cam':
-      atem.changePreviewInput(inputs.CAM, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, false)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = undefined
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, false)
-    }
-    break
-
-    case 'cam-lyrics':
-      atem.changePreviewInput(inputs.CAM, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, true)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = macros.FL_TEXT_NORMAL
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, true)
-    }
-    break
-
-    case 'cam-banner':
-      atem.changePreviewInput(inputs.CAM, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, true)
-      keyPreview(mix.MAIN, usk.TEXT, false)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = undefined
-        keyPreview(mix.PARENTS, usk.BANNER, true)
-        keyPreview(mix.PARENTS, usk.TEXT, false)
-    }
-    break
-
-    case 'cam-banner-text':
-      atem.changePreviewInput(inputs.CAM, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, true)
-      keyPreview(mix.MAIN, usk.TEXT, true)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = macros.FL_TEXT_NORMAL
-        keyPreview(mix.PARENTS, usk.BANNER, true)
-        keyPreview(mix.PARENTS, usk.TEXT, true)
-    }
-    break
-
-    case 'link':
-      atem.changePreviewInput(inputs.CAM, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, false)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.CAM, mix.PARENTS)
-      nextTransition.macro = undefined
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, false)
-    }
-    break
-
-    case 'link-lyrics':
-      atem.changePreviewInput(inputs.LINK, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, false)
-      keyPreview(mix.MAIN, usk.TEXT, true)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.LINK, mix.PARENTS)
-      nextTransition.macro = macros.FL_TEXT_NORMAL
-        keyPreview(mix.PARENTS, usk.BANNER, false)
-        keyPreview(mix.PARENTS, usk.TEXT, true)
-    }
-    break
-
-    case 'link-banner':
-      atem.changePreviewInput(inputs.LINK, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, true)
-      keyPreview(mix.MAIN, usk.TEXT, false)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.LINK, mix.PARENTS)
-      nextTransition.macro = undefined
-        keyPreview(mix.PARENTS, usk.BANNER, true)
-        keyPreview(mix.PARENTS, usk.TEXT, false)
-    }
-    break
-
-    case 'link-banner-text':
-      atem.changePreviewInput(inputs.LINK, mix.MAIN)
-      keyPreview(mix.MAIN, usk.BANNER, true)
-      keyPreview(mix.MAIN, usk.TEXT, true)
-
-    if (settings.parents) {
-      atem.changePreviewInput(inputs.LINK, mix.PARENTS)
-      nextTransition.macro = macros.FL_TEXT_NORMAL
-        keyPreview(mix.PARENTS, usk.BANNER, true)
-        keyPreview(mix.PARENTS, usk.TEXT, true)
-    }
-    break
+  if (settings.parents) {
+    const state = states[sceneId][mix.PARENTS]
+    atem.changePreviewInput(state.input, mix.PARENTS)
+    keyPreview(mix.PARENTS, usk.BANNER, state.usk[usk.BANNER])
+    keyPreview(mix.PARENTS, usk.TEXT, state.usk[usk.TEXT])
+    nextTransition.macro = state.macro
   }
 }
 
@@ -472,13 +320,6 @@ function httpUp () {
   })
 }
 
-function parentsFromMain () {
-	atem.changePreviewInput(inputs.MIX_MAIN, mix.PARENTS)
-	keyPreview(mix.PARENTS, usk.BANNER, false)
-	keyPreview(mix.PARENTS, usk.TEXT, false)
-	// atem.autoTransition(mix.PARENTS)
-}
-
 function keyPreview (me, number, value) {
 	// value === true -> should be on
 	// value === false -> should be off
@@ -493,11 +334,6 @@ function keyPreview (me, number, value) {
 	atem.changeUpstreamKeyNextState(number, value, me)
 }
 
-//   atem.changeProgramInput(1) // ME1(0)
-  // atem.changePreviewInput(1) // ME1(0)
-//   atem.autoTransition() // ME1(0)
-//   atem.changeProgramInput(3, 1) // ME2(1)
-// })
 
 function atemConnect () {
 	console.log('Connected to ATEM')
@@ -508,12 +344,3 @@ function atemDisconnect () {
 	console.log('Disconnected from ATEM')
   wss.emit('atemConnection', { connected: false })
 }
-
-// atem.on('stateChanged', function(err, newState) {
-// 	state = newState
-// 	// console.error(err)
-//  //  console.log(state) // catch the ATEM state.
-// })
-
-// console.log(state)
-// console.log(atem.state); // or use this.
